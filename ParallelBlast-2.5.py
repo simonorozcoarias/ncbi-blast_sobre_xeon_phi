@@ -68,6 +68,8 @@ def printHelp():
         print("      		4.Splitters ways:\n")
         print colored("        	  f = FastaSplitter (recommended when all secuences has the same long)\n",'green')
 	print colored("	       	  l = LongerSplitter (recommended when secuences has different long)\n",'green')
+	print colored("	       	  s = SorterSplitter (recommended when is needed resulting files with different sizes)\n",'green')
+	print colored("	       	  p = PhiSplitter (recommended when using CPUs and MIC devices simultaneously)\n",'green')
 	print colored("===================================================================================\n",'blue')
 	print("If you require more info about the Parallel Schemes available use \n \n     		")+colored("%s -r" % sys.argv[0],'green')
 	print("\nFor support contact:")+colored("Leonardo Camargo Forero, M.Sc @ leonardo.camargo@bios.co\n",'green')

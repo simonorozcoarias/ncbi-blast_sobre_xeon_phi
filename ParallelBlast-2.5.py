@@ -47,7 +47,7 @@ def printHelp():
         print colored("      			-t <Parallelization scheme [TP]>",'cyan')
         print colored("      			-m <Machines file>",'cyan')
         print colored("      			-j <Job Directory>",'cyan')
-        print colored("      			-p <Splitter Way [f|l]>",'cyan')
+        print colored("      			-p <Splitter Way [f|l|s|p]>",'cyan')
 	print("\n")
 	print colored("      	Utilities: \n",'green')
 	print colored("      		1. Create Blast-compliant database use:\n",'white')

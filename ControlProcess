@@ -1,0 +1,187 @@
+#!/usr/bin/python
+
+__author__ ='LCF'
+import os,sys, getopt, time
+
+### Global Variable definition ###
+
+process=''
+machinesFile=''
+machines=[]
+nMach=''
+order=''
+masterHost=''
+toDo=''
+user=''
+
+########## Printing help #############################
+
+def printHelp():
+
+        print("\nControl Process script allows to  control a particular process")
+	print("in several machines at once")
+        print("=================================================\n")
+        print("Usage: %s" % sys.argv[0])
+        print("      -p <Process to monitor>")
+	print("      -m <Machines file>")
+	print("      -o <monitor,kill>")
+	print('      -d "<what to do next after -o>"')
+        print("\n")
+        print("================================================")
+        print("\nFor support contact: leonardo.camargo@bios.co")
+
+######################################################
+
+########## Check Parameters function ###############################
+
+def checkParameters():
+
+        #### Checking number of parameters ###############
+        #print("Checking input parameters  ...")
+        if (not process) or (not machinesFile) or (not order):
+                print("ERROR Code No. 119:")
+                print("All arguments must be included")
+                print("Check help (use -h flag) !!!")
+                sys.exit()
+        #else:
+        #       print("Input parameters are complete .... done")
+
+        #################################################
+
+        #### Checking database existence  ###############
+
+######################################################
+
+########## Check Order Function ###############################
+
+def checkOrder():
+	if (order != 'monitor') and (order != 'kill'):
+		print("ERROR Code No. 652:")
+        	print("Order is not known")
+        	sys.exit()
+
+
+########## Collecting machines #########################
+
+def collectMachines():
+
+        global nMach
+        global machines
+        tempMach=os.popen("cat "+machinesFile+" | wc -l").read()
+        nMach=tempMach[0]
+        fMach= open(machinesFile,'r')
+        for line in fMach:
+                machines.append(line)
+        if(len(machines)==0):
+                print("ERROR Code No. 465 :")
+                print("Machine file is empty")
+                sys.exit()
+
+######################################################
+
+def killProcess():
+
+	for line in machines:
+		if(line[0:-1] != masterHost[0:-1]):
+			os.system('ssh '+line[0:-1]+ ' "killall -u '+user+' -e '+process+' "')
+		else:
+			os.system('kill -u '+user+' -e '+process).read()
+                     	
+
+
+def monitorProcess():
+	still='true'
+	iter=0
+	con=0
+	sec=2
+	lMach=[]
+	for x in range (0,int(nMach)):
+		lMach.append('true')
+	while(still=='true'):
+		for line in machines:
+			if(line[0:-1] != masterHost[0:-1]):
+				proc=os.popen('ssh '+line[0:-1]+ ' "ps -eu '+user+' | grep '+process+' "').read()
+				if(proc==''):
+					lMach[con]='false'
+			else:
+				proc=os.popen('ps -eu '+user+' | grep '+process).read()
+                                if(proc==''):
+                                        lMach[con]='false'
+			con=con+1
+		con=0
+		iter=iter+1
+		mach=0
+		for line in lMach:
+			if(line == 'false'):
+				mach=mach+1
+		
+		#if(still=='true'):
+			#print("Iteration No. "+str(iter)+": Process "+process+" still running\n")
+		#	time.sleep(sec)
+
+#		if(str(iter)>20):
+#			sec=60
+
+
+		if(mach==int(nMach)):
+			still='false'
+
+
+
+def do():
+	os.system(toDo)
+
+def main():
+	try:
+                flags, params = getopt.getopt(sys.argv[1:],"hp:m:o:d:")
+        except getopt.GetoptError as error:
+                print (str(error))
+                print("Usage: %s -m <Process name> -n <Machines file> -o <monitor,kill> -d ToDo (optional)" % sys.argv[0])
+                sys.exit(2)
+        global machinesFile
+	global process
+	global order
+	global masterHost
+	global toDo
+
+        for o, a in flags:
+                if o == '-h':
+                        printHelp()
+                        sys.exit()
+                elif o == '-p':
+                        process=a
+                elif o == '-m':
+                        machinesFile=a
+		elif o == '-o':
+			order=a
+		elif o == '-d':
+			toDo=a
+	checkParameters()
+	checkOrder()
+	collectMachines()
+        masterHost=os.popen('hostname -a').read()
+	global user
+	user=(os.popen('whoami').read())[0:-1]
+	if (order=='monitor'):
+		startTime=time.clock()
+		monitorQuote="The process "+process+" is being monitored"
+		monitorProcess()
+		endTime=time.clock()
+		elapsedTime=endTime-startTime
+		#print("Process "+process+" monitored time was "+str(elapsedTime))
+	elif (order=='kill'):
+		killProcess()
+	if (toDo !=''):
+		do()
+
+if __name__ == "__main__":
+	#print("\n")
+        #print("###############################################################\n\n")
+        #print("                    ControlProcess V.1.0                   ")
+        #print("                      Developed @ BIOS                    ")
+        #print("                by Leonardo Camargo Forero")
+        #print("                 leonardo.camargo@bios.co")
+        #print("                           2013                    \n")
+        #print("###############################################################\n")
+        main()
+
